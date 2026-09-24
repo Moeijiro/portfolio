@@ -128,7 +128,7 @@ export default function Home() {
                     {p.proof.map((l, j) => (
                       <span key={l.href}>
                         {j ? " · " : ""}
-                        <Link href={l.href} className="text-accent/90 underline-offset-4 hover:underline">{l.label}</Link>
+                        <Link href={l.href} className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">{l.label}</Link>
                       </span>
                     ))}
                   </p>

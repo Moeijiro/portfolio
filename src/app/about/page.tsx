@@ -57,7 +57,7 @@ export default function AboutPage() {
               <div><dt className="text-faint">Also</dt><dd className="mt-1">{site.focus.join(" · ")}</dd></div>
               <div><dt className="text-faint">Public work</dt><dd className="mt-1">{projects.length} repositories · {tests} automated tests · CI on each</dd></div>
               <div><dt className="text-faint">Core stack</dt><dd className="mt-1">Python, FastAPI, SQLAlchemy, httpx, discord.py, Next.js, TypeScript</dd></div>
-              <div><dt className="text-faint">Start with</dt><dd className="mt-1"><Link href={`/projects/${flagships[0].slug}/`} className="text-accent underline-offset-4 hover:underline">{flagships[0].name}</Link>, <Link href="/projects/databridge/" className="text-accent underline-offset-4 hover:underline">DataBridge</Link> or <Link href="/projects/scoutflow/" className="text-accent underline-offset-4 hover:underline">ScoutFlow</Link></dd></div>
+              <div><dt className="text-faint">Start with</dt><dd className="mt-1"><Link href={`/projects/${flagships[0].slug}/`} className="text-accent underline decoration-accent/40 underline-offset-4">{flagships[0].name}</Link>, <Link href="/projects/databridge/" className="text-accent underline decoration-accent/40 underline-offset-4">DataBridge</Link> or <Link href="/projects/scoutflow/" className="text-accent underline decoration-accent/40 underline-offset-4">ScoutFlow</Link></dd></div>
             </dl>
           </aside>
         </Container>

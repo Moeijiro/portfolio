@@ -84,7 +84,7 @@ export default function ServicesPage() {
                 {s.proof.map((slug, i) => (
                   <span key={slug}>
                     {i ? " · " : ""}
-                    <Link href={`/projects/${slug}/`} className="text-muted underline-offset-4 hover:text-fg hover:underline">{bySlug(slug)!.name}</Link>
+                    <Link href={`/projects/${slug}/`} className="text-muted underline decoration-white/25 underline-offset-4 hover:text-fg">{bySlug(slug)!.name}</Link>
                   </span>
                 ))}
               </p>

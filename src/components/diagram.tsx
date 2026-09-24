@@ -121,7 +121,6 @@ function Svg({
             onBlur={interactive ? () => setActive(null) : undefined}
             tabIndex={interactive ? 0 : undefined}
             role={interactive ? "button" : undefined}
-            aria-label={interactive ? `${node.title}${node.sub ? ` — ${node.sub}` : ""}` : undefined}
           >
             <rect width={w} height={h} rx={10} fill="#0b0c0f" />
             <rect
@@ -205,7 +204,7 @@ export function FlowDiagram({
                     {caption.links.map((l, i) => (
                       <span key={l.href}>
                         {i ? ", " : ""}
-                        <Link href={l.href} className="text-accent underline-offset-4 hover:underline">{l.label}</Link>
+                        <Link href={l.href} className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">{l.label}</Link>
                       </span>
                     ))}
                     .
