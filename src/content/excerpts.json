@@ -1,0 +1,58 @@
+{
+  "nexusguard": {
+    "file": "backend/app/engine/detectors/spam.py",
+    "start": 37,
+    "end": 63,
+    "code": "class MessageFloodDetector:\n    module = Module.MESSAGE_FLOOD\n    handles = (MessageEvent,)\n\n    def detect(self, event: MessageEvent, rule: MessageFloodRule, state: WindowStore) -> Detection | None:\n        key = f\"flood:{event.guild_id}:{event.author.id}\"\n        if state.cooling_down(key, event.at):\n            return None\n        hits = state.add(key, event.at, rule.window_seconds)\n        count = len(hits)\n        if count < rule.max_messages:\n            return None\n        state.clear(key)\n        state.start_cooldown(key, event.at, rule.window_seconds)\n        span = max((hits[-1][0] - hits[0][0]).total_seconds(), 0.1)\n        severity = Severity.HIGH if span <= rule.window_seconds / 2 else Severity.MEDIUM\n        return Detection(\n            module=self.module,\n            type=EventType.SPAM_DETECTED,\n            severity=severity,\n            summary=f\"{count} messages in {span:.1f} s\",\n            user=event.author,\n            channel_id=event.channel_id,\n            message_id=event.message_id,\n            metadata={\"messages\": count, \"window_seconds\": rule.window_seconds, \"threshold\": rule.max_messages,\n                      \"kind\": \"flood\"},\n        )",
+    "url": "https://github.com/Moeijiro/nexusguard/blob/e77cdd0489cfe6f32a479946cc4a620b0b644704/backend/app/engine/detectors/spam.py#L37-L63"
+  },
+  "discord-automation-platform": {
+    "file": "backend/app/core/security.py",
+    "start": 97,
+    "end": 107,
+    "code": "def sign_payload(body: bytes, secret: str | None = None) -> str:\n    \"\"\"Return the ``sha256=<hex>`` signature expected in ``X-Signature``.\"\"\"\n    key = (secret or settings.webhook_secret).encode()\n    digest = hmac.new(key, body, hashlib.sha256).hexdigest()\n    return f\"sha256={digest}\"\n\n\ndef verify_signature(body: bytes, header_value: str | None) -> bool:\n    if not header_value:\n        return False\n    return hmac.compare_digest(sign_payload(body), header_value.strip())",
+    "url": "https://github.com/Moeijiro/discord-automation-platform/blob/c753548cdb29b347e82ae0a5084f06528038f59c/backend/app/core/security.py#L97-L107"
+  },
+  "databridge": {
+    "file": "backend/app/connectors/http.py",
+    "start": 147,
+    "end": 169,
+    "code": "def retryable_status(status: int) -> bool:\n    return status == 429 or status >= 500\n\n\nasync def send_with_retries(method: str, url: str, **kwargs: Any) -> tuple[HttpResponse | None, int, str | None]:\n    \"\"\"(response, attempts, error). ``response`` is None when no HTTP answer ever came back.\"\"\"\n    attempts = settings.retry_attempts\n    error: str | None = None\n    for attempt in range(1, attempts + 1):\n        try:\n            response = await request(method, url, **kwargs)\n        except UnsafeURL:\n            raise\n        except RequestFailed as exc:\n            error = str(exc)\n            if not exc.retryable or attempt == attempts:\n                return None, attempt, error\n        else:\n            if not retryable_status(response.status) or attempt == attempts:\n                return response, attempt, None\n            error = f\"HTTP {response.status}\"\n        await asyncio.sleep(settings.retry_base_delay_seconds * (2 ** (attempt - 1)))\n    return None, attempts, error",
+    "url": "https://github.com/Moeijiro/databridge/blob/bdb140bd6b17495c9b4154664440e5024baf1763/backend/app/connectors/http.py#L147-L169"
+  },
+  "nexaflow": {
+    "file": "backend/app/services/templating.py",
+    "start": 26,
+    "end": 44,
+    "code": "def resolve_path(payload: Any, path: str) -> Any:\n    \"\"\"Walk ``a.b.0.c`` through dicts and lists; return None when it breaks.\"\"\"\n    current = payload\n    for part in path.replace(\"[\", \".\").replace(\"]\", \"\").split(\".\"):\n        if part == \"\":\n            continue\n        if isinstance(current, dict):\n            if part not in current:\n                return None\n            current = current[part]\n        elif isinstance(current, list):\n            try:\n                current = current[int(part)]\n            except (ValueError, IndexError):\n                return None\n        else:\n            return None\n    return current",
+    "url": "https://github.com/Moeijiro/nexaflow/blob/325e98622fa271bd1e1b2f9fa2431683cfdc3e07/backend/app/services/templating.py#L26-L44"
+  },
+  "scoutflow": {
+    "file": "backend/app/fetch/http.py",
+    "start": 208,
+    "end": 231,
+    "code": "started = time.perf_counter()\nredirects: list[str] = []\ncurrent = url\ntry:\n    async with _client() as client:\n        while True:\n            await _space_requests(urlsplit(current).hostname or \"\")\n            response, body = await _raw_get(client, current, accept)\n            if response.is_redirect and \"location\" in response.headers:\n                if len(redirects) >= settings.max_redirects:\n                    raise CheckFailure(\"http_error\", \"Too many redirects.\", response.status_code)\n                nxt = urljoin(current, response.headers[\"location\"])\n                try:\n                    await validate_url(nxt)\n                except UnsafeURL as exc:\n                    raise CheckFailure(\"invalid_config\", f\"The page redirected to a blocked address. {exc}\") from exc\n                redirects.append(nxt)\n                current = nxt\n                continue\n            break\nexcept httpx.TimeoutException as exc:\n    raise CheckFailure(\"timeout\", f\"No response within {settings.http_timeout_seconds:g} s.\") from exc\nexcept httpx.TransportError as exc:\n    raise CheckFailure(\"network\", _network_message(exc)) from exc",
+    "url": "https://github.com/Moeijiro/scoutflow/blob/369b8a042cf8f0a7dbde7d0d4f3d7320d55903d9/backend/app/fetch/http.py#L208-L231"
+  },
+  "resolveai": {
+    "file": "backend/app/services/answering.py",
+    "start": 79,
+    "end": 104,
+    "code": "confident = (\n    bool(retrieval.passages)\n    and retrieval.top_score >= settings.retrieval_min_score\n    and retrieval.coverage >= settings.retrieval_min_coverage\n)\nif confident:\n    try:\n        reply = await provider.answer(question, retrieval.passages)\n    except ProviderError as exc:\n        logger.warning(\"Provider %s failed: %s\", provider.name, exc)\n        result.answer = ERROR_MESSAGE\n        result.status = ConversationStatus.ERROR\n        error = str(exc)[:255]\n    else:\n        error = None\n        retrieved = retrieval.article_ids()\n        # Only articles that were both retrieved and cited count.\n        cited = [aid for aid in reply.cited_article_ids if aid in retrieved]\n        if reply.answerable and reply.text:\n            result.answer = reply.text\n            result.status = ConversationStatus.ANSWERED\n            result.sources = _describe(db, cited, retrieval)\n        else:\n            result.answer = reply.text or NOT_FOUND_MESSAGE\nelse:\n    error = None",
+    "url": "https://github.com/Moeijiro/resolveai/blob/2b360262a47b48264256787901ace77a9f5ccb4c/backend/app/services/answering.py#L79-L104"
+  },
+  "api-management-platform": {
+    "file": "backend/app/core/rate_limit.py",
+    "start": 46,
+    "end": 72,
+    "code": "def check(self, key: str, limit: int) -> RateLimitResult:\n    now = time.monotonic()\n    hits = self._hits[key]\n\n    # Drop everything that has fallen out of the window.\n    cutoff = now - self.window\n    while hits and hits[0] <= cutoff:\n        hits.popleft()\n\n    if len(hits) >= limit:\n        retry_after = max(1, int(self.window - (now - hits[0])) + 1)\n        return RateLimitResult(\n            allowed=False,\n            limit=limit,\n            remaining=0,\n            reset_after=retry_after,\n            retry_after=retry_after,\n        )\n\n    hits.append(now)\n    reset_after = max(1, int(self.window - (now - hits[0]))) if hits else self.window\n    return RateLimitResult(\n        allowed=True,\n        limit=limit,\n        remaining=max(0, limit - len(hits)),\n        reset_after=reset_after,\n    )",
+    "url": "https://github.com/Moeijiro/api-management-platform/blob/9880e776beafa287a9a3e49ad75542e84226420f/backend/app/core/rate_limit.py#L46-L72"
+  },
+  "forgedesk": {
+    "file": "backend/app/api/deps.py",
+    "start": 63,
+    "end": 76,
+    "code": "def accessible_projects(user: User) -> Select[tuple[Project]]:\n    query = select(Project)\n    if user.role == Role.OWNER:\n        return query.where(Project.owner_id == user.id)\n    if user.client_id is None:\n        return query.where(false())  # a client user without a client sees nothing\n    return query.where(Project.client_id == user.client_id)\n\n\ndef load_project(db: Session, user: User, project_id: int) -> Project:\n    project = db.execute(accessible_projects(user).where(Project.id == project_id)).scalar_one_or_none()\n    if project is None:\n        raise not_found(\"Project\")\n    return project",
+    "url": "https://github.com/Moeijiro/forgedesk/blob/ce691d4013fd3f19bd36824db2ccd5385807a2f0/backend/app/api/deps.py#L63-L76"
+  }
+}
