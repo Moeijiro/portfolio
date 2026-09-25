@@ -54,5 +54,12 @@
     "end": 76,
     "code": "def accessible_projects(user: User) -> Select[tuple[Project]]:\n    query = select(Project)\n    if user.role == Role.OWNER:\n        return query.where(Project.owner_id == user.id)\n    if user.client_id is None:\n        return query.where(false())  # a client user without a client sees nothing\n    return query.where(Project.client_id == user.client_id)\n\n\ndef load_project(db: Session, user: User, project_id: int) -> Project:\n    project = db.execute(accessible_projects(user).where(Project.id == project_id)).scalar_one_or_none()\n    if project is None:\n        raise not_found(\"Project\")\n    return project",
     "url": "https://github.com/Moeijiro/forgedesk/blob/ce691d4013fd3f19bd36824db2ccd5385807a2f0/backend/app/api/deps.py#L63-L76"
+  },
+  "studyraid": {
+    "file": "backend/app/services/progression.py",
+    "start": 29,
+    "end": 64,
+    "code": "async def award(\n    session: AsyncSession,\n    user: User,\n    *,\n    source: LedgerSource,\n    ref: str,\n    xp: int,\n    coins: int,\n    now: datetime,\n    counts_for_streak: bool = False,\n    detail: dict[str, Any] | None = None,\n) -> LedgerEntry | None:\n    \"\"\"Append a ledger entry and update the cached totals. Idempotent per `ref`.\"\"\"\n    if await ledger_repo.exists(session, user.id, ref):\n        return None\n    entry = LedgerEntry(\n        user_id=user.id,\n        source=source,\n        source_ref=ref,\n        xp=xp,\n        coins=coins,\n        counts_for_streak=counts_for_streak,\n        local_date=local_date(now, user.timezone),\n        created_at=now,\n        detail=detail or {},\n    )\n    try:\n        async with session.begin_nested():\n            session.add(entry)\n    except IntegrityError:  # lost a race with an identical request\n        return None\n\n    level_before = level_for_xp(user.total_xp)\n    user.total_xp += xp\n    user.coins += coins\n    level_after = level_for_xp(user.total_xp)",
+    "url": "https://github.com/Moeijiro/studyraid/blob/e213f10282a837c017c5600223cf67e9a93ca56c/backend/app/services/progression.py#L29-L64"
   }
 }

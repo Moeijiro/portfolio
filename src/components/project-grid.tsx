@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import { useState, useSyncExternalStore } from "react";
 import { ProjectCard } from "@/components/project-card";
 import { CATEGORIES, type Category, projects } from "@/content/projects";
@@ -16,6 +17,9 @@ function readCategory(): Category | null {
   return CATEGORIES.some((x) => x.id === c) ? (c as Category) : null;
 }
 
+// Case studies first, then the rest; each group keeps the curated order.
+const ORDERED = [...projects.filter((p) => p.tier === "flagship"), ...projects.filter((p) => p.tier !== "flagship")];
+
 export function ProjectGrid() {
   // Deep links such as /projects/?category=discord. The page is static, so the
   // query is read on the client; the prerendered HTML shows every project.
@@ -31,48 +35,48 @@ export function ProjectGrid() {
     window.history.replaceState(null, "", url);
   }
 
-  const shown = projects.filter((p) => filter === "all" || p.categories.includes(filter));
-  const flagship = shown.filter((p) => p.tier === "flagship");
-  const more = shown.filter((p) => p.tier === "secondary");
+  const shown = ORDERED.filter((p) => filter === "all" || p.categories.includes(filter));
   const options: { id: Filter; label: string; count: number }[] = [
     { id: "all", label: "All", count: projects.length },
-    ...CATEGORIES.map((c) => ({ ...c, count: projects.filter((p) => p.categories.includes(c.id)).length })),
+    ...CATEGORIES.map((c) => ({ id: c.id, label: c.short, count: projects.filter((p) => p.categories.includes(c.id)).length })),
   ];
 
   return (
     <div>
-      <div role="group" aria-label="Filter projects" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0">
+      <div role="group" aria-label="Filter projects by category" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0">
         {options.map((o) => (
           <button
             key={o.id}
             type="button"
             aria-pressed={filter === o.id}
             onClick={() => choose(o.id)}
-            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-full border border-line px-4 text-sm text-muted transition-colors hover:border-line-2 hover:text-fg aria-pressed:border-fg aria-pressed:bg-fg aria-pressed:text-bg"
+            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line px-4 text-sm text-muted transition-colors hover:border-line-2 hover:text-fg aria-pressed:border-fg aria-pressed:bg-fg aria-pressed:text-bg"
           >
             {o.label}
             <span className="font-mono text-[11px] opacity-60">{o.count}</span>
           </button>
         ))}
       </div>
-      <p className="sr-only" aria-live="polite">{shown.length} projects shown</p>
-
-      {flagship.length ? (
-        <section aria-labelledby="flagship-h" className="mt-10">
-          <h2 id="flagship-h" className="font-mono text-xs tracking-[0.16em] text-faint uppercase">Flagship · {flagship.length}</h2>
-          <div className="mt-4 grid gap-5 md:grid-cols-2">
-            {flagship.map((p, i) => <ProjectCard key={p.slug} project={p} priority={i < 2} />)}
-          </div>
-        </section>
-      ) : null}
-      {more.length ? (
-        <section aria-labelledby="more-h" className="mt-14">
-          <h2 id="more-h" className="font-mono text-xs tracking-[0.16em] text-faint uppercase">More projects · {more.length}</h2>
-          <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {more.map((p) => <ProjectCard key={p.slug} project={p} size="sm" />)}
-          </div>
-        </section>
-      ) : null}
+      <p className="sr-only" aria-live="polite">
+        {shown.length} projects shown
+      </p>
+      <motion.ul layout className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <AnimatePresence initial={false} mode="popLayout">
+          {shown.map((p, i) => (
+            <motion.li
+              key={p.slug}
+              layout
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.97 }}
+              transition={{ duration: 0.25, ease: [0.2, 0.7, 0.2, 1] }}
+              className="min-w-0"
+            >
+              <ProjectCard project={p} priority={i < 3} size="md" />
+            </motion.li>
+          ))}
+        </AnimatePresence>
+      </motion.ul>
     </div>
   );
 }

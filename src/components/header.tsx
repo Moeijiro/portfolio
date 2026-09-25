@@ -8,7 +8,7 @@ import { LogoMark } from "@/components/logo";
 import { site } from "@/lib/site";
 
 const NAV = [
-  { href: "/projects/", label: "Work" },
+  { href: "/projects/", label: "Projects" },
   { href: "/services/", label: "Services" },
   { href: "/about/", label: "About" },
   { href: "/contact/", label: "Contact" },

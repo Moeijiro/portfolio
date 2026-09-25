@@ -2,14 +2,15 @@
 // the code, the screenshots in docs/screenshots and the collected test count.
 // These are personal portfolio projects, not client work.
 
-export type Category = "discord" | "apis" | "automation" | "web" | "security";
+export type Category = "web" | "automation" | "discord" | "apis" | "ai" | "security";
 
-export const CATEGORIES: { id: Category; label: string }[] = [
-  { id: "discord", label: "Discord Systems" },
-  { id: "apis", label: "APIs & Integrations" },
-  { id: "automation", label: "Automation" },
-  { id: "web", label: "Full-Stack Apps" },
-  { id: "security", label: "Security & Monitoring" },
+export const CATEGORIES: { id: Category; label: string; short: string }[] = [
+  { id: "web", label: "Full-Stack Apps", short: "Full-Stack" },
+  { id: "automation", label: "Automation", short: "Automation" },
+  { id: "discord", label: "Discord Systems", short: "Discord" },
+  { id: "apis", label: "APIs & Integrations", short: "APIs" },
+  { id: "ai", label: "AI", short: "AI" },
+  { id: "security", label: "Security & Monitoring", short: "Security" },
 ];
 
 export type NodeKind = "input" | "core" | "store" | "external";
@@ -25,6 +26,10 @@ export type Project = {
   tier: "flagship" | "secondary";
   hue: number;
   kind: string;
+  /** Card copy: what it is, in plain words (no backend jargon). */
+  pitch: string;
+  /** Card copy: the one thing that makes it interesting to build. */
+  why: string;
   tagline: string;
   summary: string;
   categories: Category[];
@@ -37,6 +42,8 @@ export type Project = {
   solution?: string;
   features: Point[];
   decisions?: Point[];
+  security?: Point[];
+  testing?: string;
   diagram?: Diagram;
   demonstrates: string[];
   run: string[];
@@ -49,11 +56,94 @@ export const repoUrl = repo;
 
 export const projects: Project[] = [
   {
+    slug: "studyraid",
+    name: "StudyRaid",
+    tier: "flagship",
+    hue: 280,
+    kind: "Gamified study platform · full-stack",
+    pitch: "Gamified study platform: homework becomes quests with XP, levels, streaks, focus sessions and team challenges.",
+    why: "Every reward is computed on the server from an append-only ledger, and party challenges update live over WebSockets.",
+    tagline: "A study planner that plays like an RPG: quests, XP, streaks, focus sessions and party challenges with friends.",
+    summary:
+      "Homework, revision and goals become quests worth XP. Streaks follow each student's own time zone, focus sessions are timed by the server, and small parties chase weekly goals with live progress.",
+    categories: ["web"],
+    stack: ["Python", "FastAPI", "Next.js", "WebSockets", "SQLAlchemy 2", "PostgreSQL", "TypeScript", "Tailwind CSS", "Recharts", "Docker"],
+    tests: 115,
+    cover: "dashboard",
+    shots: [
+      { src: "dashboard", alt: "Dashboard: level 17 with XP progress, a 12-day streak, today's quests and weekly XP" },
+      { src: "quests", alt: "Quest board with planned, in-progress and recently closed quests" },
+      { src: "focus-session", alt: "Full-screen focus session counting down a 50-minute block" },
+      { src: "analytics", alt: "Analytics: XP by day, best weekday, subjects, outcomes and an activity heatmap" },
+      { src: "party", alt: "Party page with a live weekly challenge, member contributions and a leaderboard" },
+      { src: "achievements", alt: "Achievements unlocked from real activity, with progress toward the rest" },
+      { src: "mobile-dashboard", alt: "Dashboard on a phone", mobile: true },
+    ],
+    overview:
+      "StudyRaid turns schoolwork into quests. Each quest has a subject, a difficulty and an estimate, and completing it pays XP and coins that level you up. A daily streak rewards consistency, a full-screen focus mode times deep work, 18 achievements unlock from what you actually do, and parties of up to eight friends take on shared weekly challenges. Analytics show XP and focus time by day, completion rate, best weekday and a 26-week heatmap.",
+    problem:
+      "Gamification only motivates if the numbers can be trusted. If the client can claim XP, if a double-click pays twice, if a streak breaks because a student in Kyiv finished at 00:30, or if a party counter drifts from what members did, the game stops meaning anything.",
+    solution:
+      "All rewards are computed on the server from an append-only ledger with a unique key per source, so every payout is idempotent. Streaks, party progress and analytics are recomputed from recorded activity in each user's own calendar. Live updates are published only after the transaction commits.",
+    features: [
+      { title: "Quests with real weight", body: "Difficulty and estimated effort set the base XP; early finishes, streaks and a daily soft cap adjust it on completion." },
+      { title: "Level curve", body: "Each level costs 100 XP more than the last. The closed form inverts exactly, so level-from-XP is O(1)." },
+      { title: "Streaks & freezes", body: "One meaningful activity a day, in the student's time zone. Coins buy a freeze the scheduler spends on a missed day." },
+      { title: "Focus mode", body: "25, 50, 90 or custom minutes. The server decides when the time has passed; credit is capped at the plan." },
+      { title: "Achievements", body: "18 badges such as Night Owl, Boss Slayer and No Days Off, each a threshold on stats aggregated from real activity." },
+      { title: "Parties & challenges", body: "Invites by username or code, weekly goals, per-member contribution, and a live activity feed." },
+      { title: "Scoped leaderboards", body: "Only among people you share a party with, never global, and anyone can opt out." },
+      { title: "Notifications", body: "Due tomorrow, level-ups, challenge results and a streak warning, pushed live and deduplicated." },
+    ],
+    decisions: [
+      { title: "The ledger is the source of truth", body: "Every XP and coin change is a row keyed by its source (quest:42, achievement:first_blood). Totals are a cache updated in the same transaction, and a test holds them equal to the ledger." },
+      { title: "Progress is derived, not counted", body: "Challenge progress is recomputed from members' activity inside the window, counted from the moment each member joined. Settlement is a conditional update, so a race can't pay twice." },
+      { title: "Publish after commit", body: "Services queue realtime events on the session; they reach WebSockets only once the transaction commits. Nobody sees XP that was rolled back." },
+      { title: "The clock is a parameter", body: "Routes read the time once and pass it down. Tests are deterministic, and the demo replays 100 days of history through production code." },
+    ],
+    security: [
+      { title: "Rotating refresh tokens", body: "Opaque, stored as SHA-256 digests in an HttpOnly cookie and rotated on each use. Replaying an old token revokes the whole login." },
+      { title: "Server-side rewards", body: "Request bodies reject unknown fields, so a client can't send XP. Rewards come from facts the server owns." },
+      { title: "404 for foreign data", body: "Ownership and membership are part of every lookup, so other users' quests and parties look like they don't exist." },
+      { title: "WebSocket tickets", body: "Sockets authenticate with a single-use 30-second ticket and a checked Origin, never a long-lived token in the URL." },
+      { title: "Passwords & limits", body: "argon2id, identical timing for unknown emails, and rate limits on login, registration and writes." },
+      { title: "CSRF", body: "Cookie endpoints require a custom header that cross-site pages can't send without a CORS preflight." },
+    ],
+    testing:
+      "115 pytest tests drive the real app over HTTP and WebSockets with a controllable clock: auth and token reuse, cross-user access, reward rules, level boundaries, time-zone streak days, achievements, focus timing, challenge settlement, idempotent scheduler runs and live event delivery. CI runs the suite on SQLite and PostgreSQL and checks that the Alembic migrations match the models exactly.",
+    diagram: {
+      columns: [
+        [
+          { id: "web", title: "Next.js app", sub: "React · Motion · Recharts", kind: "input" },
+          { id: "sock", title: "WebSocket", sub: "single-use ticket", kind: "input" },
+        ],
+        [
+          { id: "api", title: "FastAPI routes", sub: "auth · quests · parties", kind: "core" },
+          { id: "sched", title: "Scheduler", sub: "reminders · expiry", kind: "core" },
+        ],
+        [
+          { id: "svc", title: "Services", sub: "quests · focus · challenges", kind: "core" },
+          { id: "eng", title: "Rule engines", sub: "levels · rewards · streaks", kind: "core" },
+        ],
+        [
+          { id: "db", title: "XP ledger & data", sub: "SQLite · PostgreSQL", kind: "store" },
+          { id: "hub", title: "Realtime hub", sub: "post-commit outbox", kind: "core" },
+        ],
+      ],
+      edges: [["web", "api"], ["api", "svc"], ["sched", "svc"], ["svc", "eng"], ["svc", "db"], ["svc", "hub"], ["hub", "sock"]],
+    },
+    demonstrates: ["Full-stack product design", "Game-system design", "Realtime (WebSockets)", "Session security", "Time-zone-correct logic", "Data modelling", "PostgreSQL + SQLite"],
+    run: ["make install", "make seed   # ~100 days of demo history", "make api    # FastAPI on :8000", "make web    # Next.js on :3000"],
+    demoNote: "Seeds six fictional students with about 100 days of history, generated through the real services. Or run docker compose up to use PostgreSQL.",
+  },
+  {
     slug: "nexusguard",
     name: "NexusGuard",
     tier: "flagship",
     hue: 12,
     kind: "Discord bot · engine · dashboard",
+    pitch: "Security and moderation bot for Discord servers that stops raids and spam, and explains every action it takes.",
+    why: "Detection, rule and action engines run behind per-server safety caps, so a bad rule can't kick half the server.",
     tagline: "Rule-based security and moderation for Discord servers, with every decision explained.",
     summary:
       "A discord.py bot feeding detection, rule and action engines: floods, raids, mass mentions and privileged-role grants — reviewed in an OAuth2 dashboard.",
@@ -122,6 +212,8 @@ export const projects: Project[] = [
     tier: "flagship",
     hue: 262,
     kind: "OAuth2 dashboard · gateway bot",
+    pitch: "Dashboard and bot that automate a Discord server: verification, welcome messages, roles and an audit log.",
+    why: "Sign in with Discord; every change re-checks permissions with Discord before it runs.",
     tagline: "Discord OAuth2 dashboard and automation bot with permission checks that ask Discord, not a cache.",
     summary:
       "Sign in with Discord, configure verification, welcome messages and role automation, and read an audit trail of every action — including the ones Discord would have refused.",
@@ -184,6 +276,8 @@ export const projects: Project[] = [
     tier: "flagship",
     hue: 250,
     kind: "Integration & sync platform",
+    pitch: "Connects an API or webhook to another API, maps the fields between them, and shows exactly which records failed.",
+    why: "Retries only failures a retry can fix, with live run progress and credentials that never leave the server.",
     tagline: "Connect an API or webhook to another API — with field mapping, retries and a record of exactly what failed.",
     summary:
       "REST and webhook connectors, declarative field mapping with named transforms, schedules, retries and live run progress, plus the exact records that failed — masked.",
@@ -247,6 +341,8 @@ export const projects: Project[] = [
     tier: "flagship",
     hue: 292,
     kind: "Automation platform · marketing site",
+    pitch: "Automation platform: a webhook starts a workflow that reshapes the data and notifies Discord, Telegram or any URL.",
+    why: "A visual builder, templated steps and a readable log of every run, plus the product's marketing site.",
     tagline: "Webhook-triggered workflows with JSON transforms and Discord, Telegram or HTTP actions — and a run log you can read.",
     summary:
       "A trigger, an optional transform and an action; runs in the background with retries, and records the payload at every stage. Full marketing site and developer dashboard.",
@@ -314,6 +410,8 @@ export const projects: Project[] = [
     tier: "flagship",
     hue: 182,
     kind: "Web change monitoring",
+    pitch: "Watches public web pages for price, stock and content changes, and alerts you on Discord or Telegram.",
+    why: "Every fetch is SSRF-guarded, and a failed check is recorded as a failure, never as a change.",
     tagline: "Watch prices, stock, text, whole pages and JSON fields on public sites — and see exactly what changed.",
     summary:
       "Scheduled checks with word diffs, price deltas and stock transitions, alerts to Discord, Telegram or signed webhooks, and failures that never masquerade as changes.",
@@ -375,10 +473,12 @@ export const projects: Project[] = [
     tier: "flagship",
     hue: 152,
     kind: "AI answers from your docs",
+    pitch: "AI support assistant that answers customer questions from your own help articles, with an embeddable chat widget.",
+    why: "Answers cite the articles they come from; questions it can't answer are collected instead of guessed.",
     tagline: "Customer-support answers grounded in your own articles, with verified citations and an honest “I don't know”.",
     summary:
       "BM25 retrieval over your help articles, grounded answers with checked citations, an unresolved-questions list, an embeddable widget and a /v1/ask API. Runs free in mock mode.",
-    categories: ["web", "apis"],
+    categories: ["ai", "web", "apis"],
     stack: ["Python", "FastAPI", "SQLAlchemy", "httpx", "OpenAI-compatible API", "Next.js", "TypeScript", "Vanilla JS widget"],
     tests: 41,
     cover: "05-knowledge-base-chat",
@@ -439,6 +539,8 @@ export const projects: Project[] = [
     tier: "flagship",
     hue: 215,
     kind: "API keys · rate limits · logs",
+    pitch: "Developer console for an API product: API keys, per-key rate limits and a searchable log of every request.",
+    why: "Keys are stored as hashes and shown once; logging is batched off the request path.",
     tagline: "Developer console for an API product: hashed API keys, per-key rate limits and request logs off the hot path.",
     summary:
       "Issue API keys, call a protected API with them, and see every request — status, latency and why it was refused. Sliding-window limits with standard quota headers.",
@@ -500,6 +602,8 @@ export const projects: Project[] = [
     tier: "flagship",
     hue: 45,
     kind: "Client portal · full-stack",
+    pitch: "Client portal for freelancers and studios: projects, tasks, versioned deliverables and client approvals.",
+    why: "Two roles in one app: clients see only the projects they're invited to.",
     tagline: "A client portal for freelancers and studios: projects, versioned deliverables with approval, files and updates.",
     summary:
       "Studio dashboard and a separate client portal with strict data boundaries: approvals, change requests, secure file sharing, single-use invitations and an activity log.",
@@ -565,6 +669,8 @@ export const projects: Project[] = [
     tier: "secondary",
     hue: 145,
     kind: "Uptime monitoring",
+    pitch: "Uptime monitoring for websites and APIs, with incidents, alerts and public status pages.",
+    why: "Scheduled checks open and resolve incidents on their own, with alerts only on state changes.",
     tagline: "HTTP uptime monitoring with incidents, alerts and public status pages.",
     summary: "An async scheduler that never double-checks, threshold-based incidents, Discord/Telegram/webhook alerts and public status pages.",
     categories: ["security", "automation"],
@@ -595,6 +701,8 @@ export const projects: Project[] = [
     tier: "secondary",
     hue: 292,
     kind: "Discord helpdesk",
+    pitch: "Helpdesk that lives in Discord: members open tickets in the server, staff answer them from a web queue.",
+    why: "Transcripts and response times are measured, so support quality can be tracked.",
     tagline: "Customer support that lives in a Discord server: a real ticket queue with transcripts and measured SLAs.",
     summary: "Tickets opened from a Discord panel into private threads; agents claim, prioritise and close from Discord or the dashboard.",
     categories: ["discord", "web"],
@@ -626,6 +734,8 @@ export const projects: Project[] = [
     tier: "secondary",
     hue: 200,
     kind: "Webhook → action engine",
+    pitch: "Turns incoming webhooks into Discord, Telegram or HTTP actions using simple rules.",
+    why: "Retries with backoff and a full execution log for every delivery.",
     tagline: "Turn incoming webhooks into Discord, Telegram or HTTP actions, with retries and a full execution log.",
     summary: "The backend-first predecessor of NexaFlow: an adapter-based workflow engine with background retries and encrypted credentials.",
     categories: ["automation", "apis"],
@@ -656,6 +766,8 @@ export const projects: Project[] = [
     tier: "secondary",
     hue: 210,
     kind: "One-time secret links",
+    pitch: "Share a password or key through a link that works once, then destroys itself.",
+    why: "Encrypted with AES-GCM and shredded after the first read.",
     tagline: "Encrypted one-time links for passwords, keys and small files — expired and shredded after reading.",
     summary: "AES-256-GCM encryption, passphrase protection, atomic view claims and a published threat model.",
     categories: ["security", "web"],
@@ -686,6 +798,8 @@ export const projects: Project[] = [
     tier: "secondary",
     hue: 50,
     kind: "Discord tournaments",
+    pitch: "Runs tournaments inside Discord: sign-ups, fair brackets or leagues, and score reporting.",
+    why: "Seeded brackets with fair byes; the opponent confirms scores and staff resolve disputes.",
     tagline: "Tournaments in Discord: sign-ups, seeded brackets with fair byes, round-robin leagues and confirmed scores.",
     summary: "Players report scores, opponents confirm, disputes go to staff; the dashboard shows the live bracket and standings.",
     categories: ["discord", "web"],
@@ -716,6 +830,8 @@ export const projects: Project[] = [
     tier: "secondary",
     hue: 275,
     kind: "Discord onboarding",
+    pitch: "Onboarding for new Discord members: a short step-by-step flow that hands out roles from their answers.",
+    why: "Flow builder with a live Discord preview and a drop-off funnel.",
     tagline: "Step-by-step Discord onboarding that grants roles from members' answers, with a flow builder and drop-off funnel.",
     summary: "A DM flow for new members — welcome, region, interests, rules — each answer able to grant a role.",
     categories: ["discord", "automation"],
@@ -746,6 +862,8 @@ export const projects: Project[] = [
     tier: "secondary",
     hue: 320,
     kind: "Discord progression",
+    pitch: "Quests, XP levels and seasonal leaderboards for Discord communities.",
+    why: "Reputation has a cooldown so it can't be farmed; any bot reports activity through one API.",
     tagline: "Quests, XP levels, badges, role rewards and seasonal leaderboards for Discord — with reputation that can't be farmed.",
     summary: "A progression engine and dashboard; any bot or service reports activity through one API call.",
     categories: ["discord", "apis"],
@@ -776,6 +894,8 @@ export const projects: Project[] = [
     tier: "secondary",
     hue: 155,
     kind: "GitHub analytics",
+    pitch: "Activity charts and language stats for any public GitHub profile.",
+    why: "A 15-minute cache keeps busy pages inside GitHub's rate limit.",
     tagline: "GitHub activity charts, language breakdowns and searchable repositories for any public profile.",
     summary: "Reads GitHub's public API with a 15-minute cache to stay inside rate limits, and gives each developer a shareable profile page.",
     categories: ["apis", "web"],

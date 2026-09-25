@@ -11,20 +11,20 @@ const mono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${site.url}/`),
-  title: { default: `${site.name} — ${site.role}`, template: `%s · ${site.name}` },
+  title: { default: `${site.name} · ${site.role}`, template: `%s · ${site.name}` },
   description: site.description,
   keywords: [
-    "Python backend developer", "Python automation developer", "FastAPI developer", "API developer",
-    "Discord bot developer", "Discord automation", "full-stack developer", "webhooks", "API integrations",
+    "Python developer", "full-stack developer", "FastAPI developer", "Next.js developer", "API developer",
+    "automation developer", "Discord bot developer", "API integrations", "freelance Python developer",
   ],
   authors: [{ name: site.name, url: site.github }],
   icons: { icon: asset("/icon.svg") },
   openGraph: {
     type: "website",
     siteName: site.name,
-    title: `${site.name} — ${site.role}`,
+    title: `${site.name} · ${site.role}`,
     description: site.description,
-    images: [{ url: "og/home.png", width: 1200, height: 630, alt: `${site.name} — ${site.role}` }],
+    images: [{ url: "og/home.png", width: 1200, height: 630, alt: `${site.name} · ${site.role}` }],
   },
   twitter: { card: "summary_large_image", images: ["og/home.png"] },
 };
@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     jobTitle: site.role,
     url: site.url,
     sameAs: [site.github, site.linkedin].filter(Boolean),
-    knowsAbout: ["Python", "FastAPI", "REST APIs", "Discord bots", "Automation", "Webhooks", "Next.js", "TypeScript"],
+    knowsAbout: ["Python", "FastAPI", "REST APIs", "Automation", "Discord bots", "Next.js", "React", "TypeScript", "WebSockets"],
   };
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`}>

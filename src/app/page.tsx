@@ -1,169 +1,172 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { CodeExcerpt } from "@/components/code";
 import { ContactBand } from "@/components/contact-band";
-import { FlowDiagram } from "@/components/diagram";
-import { GitHubIcon } from "@/components/icons";
-import { ProjectCard } from "@/components/project-card";
+import { ApiIcon, ArrowIcon, BoltIcon, CheckIcon, DiscordIcon, GitHubIcon, LayersIcon } from "@/components/icons";
+import { FeaturedCard, ProjectCard } from "@/components/project-card";
 import { Reveal } from "@/components/reveal";
-import { Button, Container, Eyebrow, SectionHead } from "@/components/ui";
-import { capabilities, principles, stack, systemCaptions, systemMap } from "@/content/home";
+import { Button, Container, SectionHead } from "@/components/ui";
+import { capabilities, FEATURED, primaryStack, quality } from "@/content/home";
 import { bySlug, projects } from "@/content/projects";
-import { pageMeta, site } from "@/lib/site";
+import { asset, pageMeta, site } from "@/lib/site";
 
 export const metadata: Metadata = pageMeta({ description: site.description, path: "./" });
 
-const FEATURED = ["nexusguard", "databridge", "scoutflow", "nexaflow", "discord-automation-platform", "resolveai"];
+const ICONS = { api: ApiIcon, bolt: BoltIcon, layers: LayersIcon, discord: DiscordIcon };
 
 export default function Home() {
   const tests = projects.reduce((n, p) => n + p.tests, 0);
+  const [lead, ...rest] = FEATURED.map((slug) => bySlug(slug)!);
+
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="glow pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
-        <Container className="relative pt-16 pb-16 sm:pt-24 lg:pt-28">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-line bg-white/[0.03] px-3.5 py-1.5 text-xs text-muted">
-              <span className="size-1.5 rounded-full bg-accent shadow-[0_0_10px] shadow-accent" aria-hidden="true" />
-              {site.role}
+      {/* 1. Who, what, how to reach me */}
+      <section className="relative overflow-hidden border-b border-line">
+        <div className="glow pointer-events-none absolute inset-0 opacity-70" aria-hidden="true" />
+        <Container className="relative grid items-center gap-12 pt-14 pb-16 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-10 lg:pt-24 lg:pb-24">
+          <div className="animate-fade-up">
+            <p className="inline-flex items-center gap-2 rounded-full border border-line bg-white/[0.03] px-3 py-1 text-xs text-muted">
+              <span className="size-1.5 rounded-full bg-accent" aria-hidden="true" /> Open to freelance projects and full-time roles
             </p>
-            <h1 className="animate-fade-up text-gradient mt-6 text-4xl font-semibold tracking-[-0.035em] text-balance [animation-delay:60ms] sm:text-6xl sm:leading-[1.04]">
-              Backend systems and automation that hold up past the happy path.
-            </h1>
-            <p className="animate-fade-up mx-auto mt-6 max-w-2xl text-base leading-relaxed text-pretty text-muted [animation-delay:120ms] sm:text-lg">
-              I build Python APIs, integrations, Discord systems and the full-stack apps around them — with retries, audit
-              trails, permission checks and tests where they matter.
+            <h1 className="mt-6 text-5xl font-semibold tracking-[-0.04em] sm:text-6xl">{site.name}</h1>
+            <p className="text-gradient mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{site.role}</p>
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-pretty text-muted sm:text-lg">
+              I build APIs, automation platforms, Discord systems and full-stack products: Python and FastAPI on the backend, React and Next.js on the front.
             </p>
-            <div className="animate-fade-up mt-9 flex flex-col items-stretch justify-center gap-3 [animation-delay:180ms] sm:flex-row sm:items-center">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button href="/projects/">View projects</Button>
-              <Button href={site.github} variant="ghost" external><GitHubIcon className="size-4" /> GitHub</Button>
-              <Button href="/contact/" variant="ghost">Contact</Button>
+              <Button href={site.github} variant="ghost" external>
+                <GitHubIcon className="size-4" /> GitHub
+              </Button>
+              <Button href="/contact/" variant="ghost">
+                Contact me
+              </Button>
             </div>
-            <ul className="animate-fade-up mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 font-mono text-xs text-faint [animation-delay:240ms]">
-              <li><span className="text-fg">{projects.length}</span> open-source projects</li>
-              <li><span className="text-fg">{tests}</span> automated tests</li>
-              <li>CI on every repository</li>
-              <li>Every one runs locally</li>
-            </ul>
+            <dl className="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-line pt-6">
+              <div>
+                <dt className="text-xs text-faint">Projects</dt>
+                <dd className="mt-1 text-2xl font-semibold tabular-nums">{projects.length}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-faint">Automated tests</dt>
+                <dd className="mt-1 text-2xl font-semibold tabular-nums">{tests}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-faint">Core stack</dt>
+                <dd className="mt-1.5 text-sm leading-snug font-medium">Python · FastAPI · Next.js</dd>
+              </div>
+            </dl>
           </div>
 
-          <div className="animate-fade-up card mx-auto mt-14 max-w-5xl rounded-3xl p-4 [animation-delay:300ms] sm:p-8">
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <p className="font-mono text-[11px] tracking-[0.16em] text-faint uppercase">The system most of my projects share</p>
-              <p className="hidden font-mono text-[11px] text-faint sm:block">hover a node</p>
+          <Link href={`/projects/${lead.slug}/`} className="group relative block animate-fade-up [animation-delay:120ms]" aria-label={`${lead.name}: ${lead.pitch}`}>
+            <div className="pointer-events-none absolute -inset-8 rounded-[2rem] bg-[radial-gradient(50%_50%_at_50%_50%,oklch(0.55_0.14_280/0.28),transparent_70%)] blur-2xl" aria-hidden="true" />
+            <div className="shot relative overflow-hidden rounded-xl transition-transform duration-500 group-hover:-translate-y-1">
+              <Image src={asset(`/shots/${lead.slug}/${lead.cover}.webp`)} alt={lead.shots[0].alt} width={1440} height={900} priority sizes="(min-width: 1024px) 600px, 100vw" className="block aspect-[16/10] w-full object-cover object-left-top" />
             </div>
-            <FlowDiagram
-              diagram={systemMap}
-              hue={190}
-              label="Discord, webhooks and web dashboards feed a Python backend with async workers, which writes to a database and calls Discord, Telegram and external APIs."
-              captions={systemCaptions}
-              hint="Hover or tap a node to see what it does and which projects implement it."
-            />
-          </div>
+            <p className="relative mt-4 flex items-center gap-2 text-sm text-muted">
+              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-medium text-accent">Newest</span>
+              <span className="truncate">
+                <span className="text-fg">{lead.name}</span>: gamified study platform
+              </span>
+              <ArrowIcon className="ml-auto size-4 shrink-0 transition-transform group-hover:translate-x-1" />
+            </p>
+          </Link>
         </Container>
       </section>
 
-      {/* Selected work */}
-      <section aria-labelledby="work" className="py-20 sm:py-28">
+      {/* 2. Strongest work, one of each kind */}
+      <section aria-labelledby="work" className="py-16 sm:py-24">
         <Container>
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <SectionHead id="work" eyebrow="Selected work" title="Software with the hard parts built in" lead="Each project is a complete product: backend, dashboard, tests, a local demo and a README that explains the decisions." />
-            <Link href="/projects/" className="text-sm text-accent underline-offset-4 hover:underline">All {projects.length} projects →</Link>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <SectionHead id="work" eyebrow="Selected work" title="Featured projects" lead="A full-stack product, a Discord system, an integration platform, an AI app and an automation platform." />
+            <Link href="/projects/" className="inline-flex items-center gap-1.5 text-sm text-accent hover:underline hover:underline-offset-4">
+              All {projects.length} projects <ArrowIcon className="size-3.5" />
+            </Link>
           </div>
-          <div className="mt-12 grid gap-5 md:grid-cols-2">
-            {FEATURED.map((slug, i) => (
-              <Reveal key={slug} delay={(i % 2) * 0.06} className="min-w-0">
-                <ProjectCard project={bySlug(slug)!} />
-              </Reveal>
+          <div className="mt-10">
+            <FeaturedCard project={lead} />
+          </div>
+          <ul className="mt-5 grid gap-5 sm:grid-cols-2">
+            {rest.map((p, i) => (
+              <li key={p.slug} className="min-w-0">
+                <Reveal delay={(i % 2) * 0.05} className="h-full">
+                  <ProjectCard project={p} />
+                </Reveal>
+              </li>
             ))}
-          </div>
+          </ul>
         </Container>
       </section>
 
-      {/* Capabilities */}
-      <section aria-labelledby="build" className="border-t border-line bg-bg-2/60 py-20 sm:py-28">
+      {/* 3. What I build */}
+      <section aria-labelledby="build" className="border-t border-line bg-bg-2/60 py-16 sm:py-24">
         <Container>
-          <SectionHead id="build" eyebrow="What I build" title="Five areas, each backed by working code" lead="Every claim links to the projects that prove it." />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {capabilities.map((c, i) => (
-              <Reveal key={c.title} delay={i * 0.04} className={i === 0 ? "sm:col-span-2" : undefined}>
-                <div className="card flex h-full flex-col rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold tracking-tight">{c.title}</h3>
+          <SectionHead id="build" eyebrow="What I build" title="Four kinds of work" />
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {capabilities.map((c) => {
+              const Icon = ICONS[c.icon];
+              const count = projects.filter((p) => p.categories.includes(c.category)).length;
+              return (
+                <li key={c.title} className="card flex flex-col rounded-2xl p-6">
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <Icon className="size-5" />
+                  </span>
+                  <h3 className="mt-5 text-lg font-semibold tracking-tight">{c.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted">{c.body}</p>
-                  <ul className="mt-5 flex flex-wrap gap-1.5">
-                    {c.projects.map((slug) => (
-                      <li key={slug}>
-                        <Link href={`/projects/${slug}/`} className="inline-flex rounded-full border border-line px-2.5 py-1 text-xs text-muted transition-colors hover:border-accent/40 hover:text-fg">
-                          {bySlug(slug)!.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href={`/projects/?category=${c.category}`} className="mt-auto pt-5 text-sm text-accent underline-offset-4 hover:underline">
-                    See all →
+                  <Link href={`/projects/?category=${c.category}`} className="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm text-accent hover:underline hover:underline-offset-4">
+                    {count} projects <ArrowIcon className="size-3.5" />
                   </Link>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+                </li>
+              );
+            })}
+          </ul>
         </Container>
       </section>
 
-      {/* Principles + code */}
-      <section aria-labelledby="how" className="py-20 sm:py-28">
-        <Container>
-          <SectionHead id="how" eyebrow="How I build" title="The unglamorous parts, done on purpose" lead="They show up across the repositories — as code you can read, not as slogans." />
-          <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-14">
-            <ol className="grid min-w-0 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-1">
-              {principles.map((p, i) => (
-                <li key={p.title} className="bg-bg p-5">
-                  <p className="flex items-baseline gap-3">
-                    <span className="font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>
-                    <span className="font-medium">{p.title}</span>
-                  </p>
-                  <p className="mt-1.5 pl-8 text-sm leading-relaxed text-muted">
-                    {p.body}{" "}
-                    {p.proof.map((l, j) => (
-                      <span key={l.href}>
-                        {j ? " · " : ""}
-                        <Link href={l.href} className="text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">{l.label}</Link>
+      {/* 4. Stack, 5. Quality */}
+      <section aria-labelledby="stack" className="border-t border-line py-16 sm:py-24">
+        <Container className="grid gap-14 lg:grid-cols-2 lg:gap-16">
+          <div>
+            <SectionHead id="stack" eyebrow="Tech stack" title="What I work with" />
+            <dl className="mt-8 space-y-5">
+              {primaryStack.map((g) => (
+                <div key={g.group}>
+                  <dt className="text-xs font-medium text-faint">{g.group}</dt>
+                  <dd className="mt-2 flex flex-wrap gap-2">
+                    {g.items.map((t) => (
+                      <span key={t} className="rounded-lg border border-line bg-white/[0.03] px-3 py-1.5 text-sm">
+                        {t}
                       </span>
                     ))}
-                  </p>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <Link href="/about/#stack" className="mt-6 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg">
+              Counted per repository <ArrowIcon className="size-3.5" />
+            </Link>
+          </div>
+          <div>
+            <SectionHead id="quality" eyebrow="Engineering quality" title="Built beyond the happy path" />
+            <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+              {quality.map((q) => (
+                <li key={q.title} className="flex gap-3 rounded-xl border border-line p-4">
+                  <CheckIcon className="mt-0.5 size-4 shrink-0 text-accent" />
+                  <div>
+                    <p className="text-sm font-medium">{q.title}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted">
+                      {q.body}{" "}
+                      <Link href={`/projects/${q.proof}/`} className="text-accent underline decoration-accent/40 underline-offset-2 hover:decoration-accent">
+                        {bySlug(q.proof)!.name}
+                      </Link>
+                    </p>
+                  </div>
                 </li>
               ))}
-            </ol>
-            <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-              <Eyebrow>Real code · DataBridge</Eyebrow>
-              <p className="mt-3 mb-5 text-sm leading-relaxed text-muted">
-                Retry with exponential backoff — but only where a retry can change the outcome. An unsafe URL is never retried; a 4xx is returned as the answer.
-              </p>
-              <CodeExcerpt repo="databridge" />
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* Stack */}
-      <section aria-labelledby="stack" className="border-t border-line bg-bg-2/60 py-20 sm:py-28">
-        <Container>
-          <SectionHead id="stack" eyebrow="Stack" title="Tools I actually ship with" lead="Counted from the dependency files of my public repositories — nothing listed that isn't in the code." />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {stack.map((g) => (
-              <div key={g.group} className="card rounded-2xl p-5">
-                <h3 className="font-mono text-[11px] tracking-[0.16em] text-faint uppercase">{g.group}</h3>
-                <ul className="mt-4 space-y-2.5">
-                  {g.items.map(([name, count]) => (
-                    <li key={name} className="flex items-baseline justify-between gap-3 text-sm">
-                      <span>{name}</span>
-                      {count ? <span className="shrink-0 font-mono text-[11px] text-faint" title={`Used in ${count} of ${projects.length} repositories`}>{count}/{projects.length}</span> : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            </ul>
+            <Link href="/about/#how" className="mt-6 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg">
+              How I build, in more detail <ArrowIcon className="size-3.5" />
+            </Link>
           </div>
         </Container>
       </section>

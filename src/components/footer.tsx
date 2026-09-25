@@ -17,7 +17,7 @@ export function Footer() {
         </div>
         <div className="flex flex-col gap-6 sm:flex-row sm:gap-14">
           <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm sm:grid-cols-1">
-            <Link href="/projects/" className="text-muted hover:text-fg">Work</Link>
+            <Link href="/projects/" className="text-muted hover:text-fg">Projects</Link>
             <Link href="/services/" className="text-muted hover:text-fg">Services</Link>
             <Link href="/about/" className="text-muted hover:text-fg">About</Link>
             <Link href="/contact/" className="text-muted hover:text-fg">Contact</Link>

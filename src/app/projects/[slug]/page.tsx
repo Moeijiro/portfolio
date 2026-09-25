@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const p = projects.find((x) => x.slug === slug);
   if (!p) return {};
-  return pageMeta({ title: `${p.name} — case study`, description: p.tagline, path: `projects/${p.slug}/`, image: `og/${p.slug}.png` });
+  return pageMeta({ title: `${p.name}${p.tier === "flagship" ? ": case study" : ""}`, description: p.pitch, path: `projects/${p.slug}/`, image: `og/${p.slug}.png` });
 }
 
 function Section({ id, eyebrow, title, children }: { id: string; eyebrow: string; title: string; children: React.ReactNode }) {
@@ -99,6 +99,16 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   const next = projects[(index + 1) % projects.length];
   const hasCode = slug in excerpts;
   const repo = repoUrl(p.slug);
+  const sections: [string, string][] = [
+    ["overview", "Overview"],
+    ["screenshots", "Screenshots"],
+    ...(p.diagram ? [["architecture", "Architecture"] as [string, string]] : []),
+    ["features", "Features"],
+    ...(p.decisions ? [["decisions", "Decisions"] as [string, string]] : []),
+    ...(p.security ? [["security", "Security"] as [string, string]] : []),
+    ...(p.testing ? [["testing", "Testing"] as [string, string]] : []),
+    ["run", "Run it"],
+  ];
 
   return (
     <article>
@@ -115,7 +125,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           <div className="mt-8 max-w-3xl">
             <Eyebrow>{p.tier === "flagship" ? "Case study" : "Project"} · {p.kind}</Eyebrow>
             <h1 className="mt-4 text-4xl font-semibold tracking-[-0.03em] text-balance sm:text-6xl">{p.name}</h1>
-            <p className="mt-5 text-lg leading-relaxed text-pretty text-muted sm:text-xl">{p.tagline}</p>
+            <p className="mt-5 text-lg leading-relaxed text-pretty sm:text-xl">{p.pitch}</p>
+            <p className="mt-3 leading-relaxed text-pretty text-muted">{p.why}</p>
             <div className="mt-6 flex flex-wrap gap-2">
               {p.categories.map((c) => <Chip key={c} tone="accent">{categoryLabel(c)}</Chip>)}
             </div>
@@ -128,7 +139,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
             {[
               ["Type", "Personal open-source project"],
               ["Automated tests", `${p.tests} (pytest)`],
-              ["Backend", p.stack.slice(0, 3).join(" · ")],
+              ["Built with", p.stack.slice(0, 3).join(" · ")],
               ["Live demo", "Runs locally — not hosted"],
             ].map(([k, v]) => (
               <div key={k} className="bg-bg/90 px-4 py-4 sm:px-5">
@@ -137,7 +148,14 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
               </div>
             ))}
           </dl>
-          <div className="card mt-10 overflow-hidden rounded-t-3xl border-b-0">
+          <nav aria-label="On this page" className="mt-8 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+            {sections.map(([id, label]) => (
+              <a key={id} href={`#${id}`} className="shrink-0 rounded-full border border-line px-3 py-1 text-xs text-muted transition-colors hover:border-line-2 hover:text-fg">
+                {label}
+              </a>
+            ))}
+          </nav>
+          <div className="card mt-8 overflow-hidden rounded-t-3xl border-b-0">
             <Frame project={p} src={`/shots/${p.slug}/${p.cover}.webp`} alt={p.shots.find((s) => s.src === p.cover)?.alt ?? p.name} priority sizes="(min-width: 1152px) 1100px, 100vw" />
           </div>
         </Container>
@@ -162,6 +180,11 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         ) : null}
       </Section>
 
+      <Section id="screenshots" eyebrow="Screenshots" title="From the running application">
+        <Gallery p={p} />
+        <p className="mt-6 text-xs text-faint">Captured from the app running locally with its seeded demo data. Select an image to open it full size.</p>
+      </Section>
+
       {p.diagram ? (
         <Section id="architecture" eyebrow="Architecture" title="How the pieces fit">
           <div className="card rounded-3xl p-4 sm:p-8">
@@ -180,7 +203,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       </Section>
 
       {p.decisions ? (
-        <Section id="decisions" eyebrow="Technical decisions" title="The choices that matter">
+        <Section id="decisions" eyebrow="Technical decisions" title="Interesting problems, and how they're solved">
           <div className={hasCode ? "grid gap-10 lg:grid-cols-2" : ""}>
             <ol className="space-y-6">
               {p.decisions.map((d, i) => (
@@ -198,10 +221,18 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         </Section>
       ) : null}
 
-      <Section id="screenshots" eyebrow="Screenshots" title="From the running application">
-        <Gallery p={p} />
-        <p className="mt-6 text-xs text-faint">Captured from the app running locally with its seeded demo data. Select an image to open it full size.</p>
-      </Section>
+
+      {p.security ? (
+        <Section id="security" eyebrow="Security" title="What protects the data">
+          <Points items={p.security} />
+        </Section>
+      ) : null}
+
+      {p.testing ? (
+        <Section id="testing" eyebrow="Testing" title="How it's verified">
+          <p className="max-w-3xl text-base leading-relaxed text-pretty text-muted sm:text-lg">{p.testing}</p>
+        </Section>
+      ) : null}
 
       <Section id="stack" eyebrow="Stack & skills" title="Built with">
         <div className="grid gap-8 md:grid-cols-2">

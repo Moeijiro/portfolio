@@ -13,8 +13,14 @@ const OUT = path.resolve("public/og");
 fs.mkdirSync(TMP, { recursive: true });
 fs.mkdirSync(OUT, { recursive: true });
 
+// Geist from Google Fonts by default; FONTS_DIR=<dir with Geist-Variable.woff2 and
+// GeistMono-Variable.woff2> renders offline (e.g. from the "geist" npm package).
+const FONTS = process.env.FONTS_DIR
+  ? `<style>@font-face{font-family:Geist;src:url(file://${path.resolve(process.env.FONTS_DIR, "Geist-Variable.woff2")})}@font-face{font-family:'Geist Mono';src:url(file://${path.resolve(process.env.FONTS_DIR, "GeistMono-Variable.woff2")})}</style>`
+  : `<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=block" rel="stylesheet">`;
+
 const head = (w, h, hue) => `<!doctype html><html><head><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=block" rel="stylesheet">
+${FONTS}
 <style>
 *{margin:0;box-sizing:border-box}
 body{width:${w}px;height:${h}px;overflow:hidden;background:#07080a;color:#eceef1;font-family:Geist,sans-serif;position:relative}
@@ -46,9 +52,9 @@ pages.push({
   <div style="position:absolute;left:72px;top:64px;right:72px;bottom:64px;display:flex;flex-direction:column">
     <div class="brand">${logo()} Moeijiro</div>
     <div style="margin-top:auto">
-      <p class="mono" style="font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:#5fe0d0">Python Backend &amp; Automation Developer</p>
-      <h1 style="margin-top:22px;font-size:64px;line-height:1.04;letter-spacing:-.035em;font-weight:600;max-width:680px">Backend systems and automation that hold up past the happy path.</h1>
-      <p style="margin-top:26px;font-size:22px;color:#9aa0aa">Discord Systems · APIs · Full-Stack Web Applications</p>
+      <p class="mono" style="font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:#5fe0d0">Python &amp; Full-Stack Developer</p>
+      <h1 style="margin-top:22px;font-size:62px;line-height:1.05;letter-spacing:-.035em;font-weight:600;max-width:700px">APIs, automation, Discord systems and full-stack products.</h1>
+      <p style="margin-top:26px;font-size:22px;color:#9aa0aa">Python · FastAPI · React · Next.js · ${projects.length} open-source projects</p>
     </div>
   </div></body></html>`,
 });
@@ -80,12 +86,14 @@ pages.push({
   <div style="position:absolute;left:470px;top:40px">${network(420, 316, 190, 0.85)}</div>
   <div style="position:absolute;right:88px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right">
     <p class="mono" style="font-size:17px;letter-spacing:.16em;text-transform:uppercase;color:#5fe0d0">Moeijiro</p>
-    <h1 style="margin-top:14px;font-size:50px;line-height:1.08;letter-spacing:-.03em;font-weight:600">Python Backend · Automation<br>APIs · Discord Systems</h1>
+    <h1 style="margin-top:14px;font-size:50px;line-height:1.08;letter-spacing:-.03em;font-weight:600">Python &amp; Full-Stack Developer<br>APIs · Automation · Discord</h1>
     <p class="mono" style="margin-top:20px;font-size:19px;color:#9aa0aa">moeijiro.github.io/portfolio</p>
   </div></body></html>`,
 });
 
-for (const pg of pages) {
+// ONLY=home,studyraid renders a subset.
+const only = process.env.ONLY ? new Set(process.env.ONLY.split(",")) : null;
+for (const pg of pages.filter((x) => !only || only.has(x.name))) {
   const file = path.join(TMP, `${pg.name}.html`);
   fs.writeFileSync(file, pg.html);
   execFileSync(CHROME, [

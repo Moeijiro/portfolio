@@ -22,7 +22,7 @@ const SERVICES = [
     title: "Backend development",
     body: "FastAPI services with a clear data model, authentication and roles, background work and tests — documented so the next developer can pick it up.",
     includes: ["FastAPI + Pydantic", "SQLAlchemy models", "Auth & roles", "pytest suites"],
-    proof: ["forgedesk", "api-management-platform", "vaultshare"],
+    proof: ["studyraid", "forgedesk", "api-management-platform", "vaultshare"],
   },
   {
     title: "API development & integrations",
@@ -38,9 +38,9 @@ const SERVICES = [
   },
   {
     title: "Full-stack web applications",
-    body: "Next.js and React interfaces on a Python backend: dashboards, client portals and product landing pages, responsive and accessible.",
+    body: "Next.js and React interfaces on a Python backend: consumer apps, dashboards, client portals and landing pages, responsive and accessible.",
     includes: ["Next.js + TypeScript", "Tailwind CSS · shadcn/ui", "Dashboards & portals", "Landing pages"],
-    proof: ["forgedesk", "resolveai", "nexaflow"],
+    proof: ["studyraid", "forgedesk", "resolveai", "nexaflow"],
   },
   {
     title: "Monitoring & internal tools",

@@ -1,10 +1,10 @@
 export const site = {
   name: "Moeijiro",
-  role: "Python Backend & Automation Developer",
-  focus: ["Discord Systems", "APIs", "Full-Stack Web Applications"],
+  role: "Python & Full-Stack Developer",
+  focus: ["APIs & integrations", "Automation", "Discord systems", "Full-stack apps"],
   url: "https://moeijiro.github.io/portfolio",
   description:
-    "Python backend and automation developer. FastAPI services, API integrations, webhooks, Discord bots and dashboards, and the full-stack apps around them — 16 open-source projects with tests and seeded demos.",
+    "Python and full-stack developer building APIs, automation platforms, Discord systems and full-stack products with FastAPI, React and Next.js. Open-source projects with tests and runnable demos.",
   github: "https://github.com/Moeijiro",
   discord: "mojiro_31",
   linkedin: null as string | null,
@@ -19,7 +19,7 @@ export function asset(path: string) {
 
 /** Per-page metadata with a canonical URL and a matching social card. */
 export function pageMeta({ title, description, path, image = "og/home.png" }: { title?: string; description: string; path: string; image?: string }) {
-  const full = title ? `${title} · ${site.name}` : `${site.name} — ${site.role}`;
+  const full = title ? `${title} · ${site.name}` : `${site.name} · ${site.role}`;
   return {
     ...(title ? { title } : {}),
     description,

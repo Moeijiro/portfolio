@@ -8,6 +8,7 @@ import path from "node:path";
 
 const SRC = process.env.SRC ?? path.resolve("..");
 const EXCERPTS = {
+  studyraid: ["backend/app/services/progression.py", 29, 64],
   nexusguard: ["backend/app/engine/detectors/spam.py", 37, 63],
   "discord-automation-platform": ["backend/app/core/security.py", 97, 107],
   databridge: ["backend/app/connectors/http.py", 147, 169],
