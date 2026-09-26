@@ -6,7 +6,7 @@ export const site = {
   description:
     "Python and full-stack developer building APIs, automation platforms, Discord systems and full-stack products with FastAPI, React and Next.js. Open-source projects with tests and runnable demos.",
   github: "https://github.com/Moeijiro",
-  discord: "mojiro_31",
+  discord: "boxedgar",
   linkedin: null as string | null,
 };
 
