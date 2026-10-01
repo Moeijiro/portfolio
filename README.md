@@ -28,10 +28,10 @@ at build time, never typed in.
 - **Architecture diagrams are data.** Each project's diagram is a list of columns and edges in
   `src/content/projects.ts`; `src/components/diagram.tsx` lays it out horizontally on wide screens and vertically on
   phones, and animates packets along the edges (switched off under `prefers-reduced-motion`).
-- **Nothing is invented.** Project text comes from each repository's README and code. Code excerpts are copied from the
-  repositories by `scripts/excerpts.mjs` and link to the exact lines at a pinned commit. Test counts are collected with
-  `pytest --collect-only`. Screenshots are the repositories' own `docs/screenshots`, converted to WebP by
-  `scripts/images.mjs`.
+- **Repository-backed content.** Overview text, diagrams and configuration come directly from each project's
+  codebase. Code excerpts are copied from the repositories by `scripts/excerpts.mjs` and link to the exact lines at a
+  pinned commit. Test counts are collected with `pytest --collect-only`. Screenshots are the repositories' own
+  `docs/screenshots`, converted to WebP by `scripts/images.mjs`.
 - **Social images** (`public/og/*.png`, 1200×630) and the LinkedIn banner (1584×396) are rendered by
   `scripts/og.mjs` with headless Chrome from the same screenshots (`ONLY=home,studyraid` renders a subset;
   `FONTS_DIR=` points at local Geist files to render offline).

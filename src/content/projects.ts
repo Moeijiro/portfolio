@@ -1,6 +1,4 @@
-// Everything on the site about a project comes from its repository: the README,
-// the code, the screenshots in docs/screenshots and the collected test count.
-// These are personal portfolio projects, not client work.
+// Project specifications, case study data and architecture maps.
 
 export type Category = "web" | "automation" | "discord" | "apis" | "ai" | "security";
 

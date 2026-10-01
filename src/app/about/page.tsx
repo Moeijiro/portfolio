@@ -23,10 +23,9 @@ const FOCUS = [
 ];
 
 const WAYS = [
-  ["I start from the failure cases.", "What happens on a timeout, a 429, a duplicate event or a missing permission is decided before the happy path is polished."],
-  ["The README is a design document.", "Each repository explains its architecture, security choices and known limitations, not just how to install it."],
+  ["The README is a design document.", "Each repository explains its architecture, security choices and known trade-offs, not just how to install it."],
   ["Tests drive the real code.", "Suites call the actual app in-process instead of mocking everything; demo data comes from the same services."],
-  ["Scope is explicit.", "READMEs say what a project is not. A small tool that is honest about its limits beats a large one that pretends."],
+  ["Scope is explicit.", "Each repository documents its architecture, concrete boundaries and known trade-offs upfront."],
 ];
 
 export default function AboutPage() {
@@ -44,8 +43,8 @@ export default function AboutPage() {
                 integrations, webhooks, Discord bots) and on the web apps people use to run them.
               </p>
               <p>
-                My public work is {projects.length} open-source projects. Each one is built as a complete product with a backend, a web interface, tests, CI, a
-                runnable demo and documentation, so you can judge the engineering and not just a screenshot. They are personal portfolio projects, not client work.
+                My public work includes {projects.length} open-source projects. Each one is built end-to-end with a backend, a web interface,
+                automated tests, CI, documentation and local runnable demos.
               </p>
               <p>I&apos;m open to freelance projects and full-time roles.</p>
             </div>
